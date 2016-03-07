@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>TRUCKS</title>
+  <script src="babylon.js"></script> 
+   <script src="oimo.js"></script>   
+  <script src="babylon.objFileLoader.js"></script>  
+    <style>
+    html, body {
+        overflow: hidden;
+        width   : 100%;
+        height  : 100%;
+        margin  : 0;
+        padding : 0;
+    }
+
+    #renderCanvas {
+        width   : 100%;
+        height  : 100%;
+        touch-action: none;
+    }
+</style>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+</body>
+</html>
+
+<script>
+    window.addEventListener('DOMContentLoaded', function() {
+        var canvas = document.getElementById('renderCanvas');
+		var engine = new BABYLON.Engine(canvas, true);
+		
+		var createScene = function() {
+    // create a basic BJS Scene object
+    var scene = new BABYLON.Scene(engine);
+	
+	scene.enablePhysics(new BABYLON.Vector3(0, -9.6, 0), new BABYLON.OimoJSPlugin());
+
+    // create a FreeCamera, and set its position to (x:0, y:5, z:-10)
+    var camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5,-10), scene);
+
+    // target the camera to scene origin
+    camera.setTarget(BABYLON.Vector3.Zero());
+
+    // attach the camera to the canvas
+    camera.attachControl(canvas, false);
+
+    // create a basic light, aiming 0,1,0 - meaning, to the sky
+    var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0,1,0), scene);
+
+		BABYLON.OBJFileLoader.OPTIMIZE_WITH_UV = true;
+		
+		var truck = {
+			frame : null,
+			fl_tire : null,
+			fr_tire : null,
+			bl_tire : null,
+			br_tire : null
+			};
+			
+		var arena = {
+			main_arena : null
+			}
+		
+	// The first parameter can be used to specify which mesh to import. Here we import all meshes
+		BABYLON.SceneLoader.ImportMesh("", "./models/", "truck1.obj", scene, function (newMeshes) {	
+	
+		newMeshes[0].material = new BABYLON.StandardMaterial("truckMat", scene);
+		newMeshes[0].material.diffuseTexture  = new BABYLON.Texture("./models/truck_texture.jpg", scene);
+		truck.frame = newMeshes[0];
+		
+		newMeshes[1].material = new BABYLON.StandardMaterial("tireMat", scene);
+		newMeshes[1].material.diffuseTexture  = new BABYLON.Texture("./models/tires_texture.jpg", scene);
+		
+		
+		truck.br_tire = newMeshes[1];
+		truck.br_tire.parent = truck.frame;
+		
+		
+		
+		
+		newMeshes[2].material = newMeshes[1].material;
+		truck.bl_tire = newMeshes[2];
+		truck.bl_tire.parent = truck.frame;
+		
+		
+		
+		newMeshes[3].material = newMeshes[1].material;
+		truck.fr_tire = newMeshes[3];
+		truck.fr_tire.parent = truck.frame;
+		
+		
+		newMeshes[4].material = newMeshes[1].material;
+		truck.fl_tire = newMeshes[4];
+		truck.fl_tire.parent = truck.frame;
+		
+		
+
+		truck.frame.position.y += 1;
+		
+		newMeshes[5].material = new BABYLON.StandardMaterial("arenaMat", scene);
+		newMeshes[5].material.diffuseTexture  = new BABYLON.Texture("./models/arena_texture.jpg", scene);
+		
+		arena.main_arena = newMeshes[5];
+		
+		
+		
+		truck.frame.setPhysicsState(BABYLON.PhysicsEngine.BoxImpostor, { mass: 2, friction: 0.8, restitution: 0.1 });
+		truck.br_tire.setPhysicsState(BABYLON.PhysicsEngine.CylinderImpostor , { mass: 1, friction: 0.2, restitution: 0.8 });
+		truck.bl_tire.setPhysicsState(BABYLON.PhysicsEngine.CylinderImpostor , { mass: 1, friction: 0.2, restitution: 0.8 });
+		truck.fr_tire.setPhysicsState(BABYLON.PhysicsEngine.CylinderImpostor , { mass: 1, friction: 0.2, restitution: 0.8 });		
+		truck.fl_tire.setPhysicsState(BABYLON.PhysicsEngine.CylinderImpostor , { mass: 1, friction: 0.2, restitution: 0.8 });
+		
+		truck.br_tire.setPhysicsLinkWith(truck.bl_tire, new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 0, 0));
+		truck.fr_tire.setPhysicsLinkWith(truck.fl_tire, new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 0, 0));
+		
+		truck.frame.setPhysicsLinkWith(truck.fr_tire, new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 0, 0));
+		//truck.frame.setPhysicsLinkWith(truck.fl_tire, new BABYLON.Vector3(1, 0, -1), new BABYLON.Vector3(0, 0, 0));
+		
+
+		});
+		
+		var ground = BABYLON.Mesh.CreateGround('ground1', 40, 60, 2, scene);
+		ground.isVisible = false;
+		
+		ground.setPhysicsState(BABYLON.PhysicsEngine.BoxImpostor, { mass: 0, friction: 0.4, restitution: 0.01 });
+		
+	scene.debugLayer.show();
+
+    // return the created scene
+    return scene;
+}
+
+var scene = createScene();
+
+engine.runRenderLoop(function() {
+    scene.render();
+});
+
+
+//ALWAYS LISTEN FOR RESIZE!
+window.addEventListener('resize', function() {
+    engine.resize();
+});
+
+    });
+</script>
