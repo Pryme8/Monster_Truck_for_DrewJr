@@ -72,7 +72,7 @@
     	task.loadedMeshes[0].material = new BABYLON.StandardMaterial("truckMat", scene);
 		task.loadedMeshes[0].material.diffuseTexture  = new BABYLON.Texture("./models/truck_texture.jpg", scene);
 		truck.frame = task.loadedMeshes[0];
-		
+		console.log(task.loadedMeshes[0]);
 		};
 		
 		tireLoad.onSuccess = function (task) {
